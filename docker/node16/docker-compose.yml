@@ -1,0 +1,10 @@
+version: '3'
+services:
+  rtsp-flv:
+    build: ./rtsp-flv
+    container_name: rtsp-flv
+    tty: true
+    ports:
+      - "8888:8080"
+    environment:
+      - TZ=Asia/Shanghai

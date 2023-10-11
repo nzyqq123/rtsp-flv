@@ -1,0 +1,22 @@
+{
+  "name": "rtsp-flv",
+  "version": "1.0.0",
+  "author": "NewChan",
+  "license": "Apache",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nzyqq123/rtsp-flv.git",
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
+    "ejs": "^3.1.6",
+    "express": "^4.17.1",
+    "express-ws": "^5.0.2",
+    "fluent-ffmpeg": "^2.1.2",
+    "websocket-stream": "^5.5.2",
+    "log4js": "^6.9.1"
+  }
+}
