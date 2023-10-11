@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div align="center">
+    <script src="../public/flv.js"></script>
+    <video controls id="videoElement"></video>
+    <table width="50%" text-align="center">
+        <tr>
+            <td>
+                <label for="deployUrlInput">Deploy URL</label>
+                <input id="deployUrlInput" value="127.0.0.1:8080">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="streamUrlInput">Stream URL</label>
+                <input id="streamUrlInput" value="rtsp://127.0.0.1/test">
+            </td>
+        </tr>
+    </table>
+    <button id="urlButton" onclick="setUrl()">set</button>
+    <button id="videoButton" onclick="pauseVideo()">play</button>
+    <script>
+        flvPlayer = null
+        videoPause = true
+        videoButton = document.getElementById("videoButton")
+        function setUrl(){
+            const deployUrlInput = document.getElementById("deployUrlInput")
+            const deployUrl = deployUrlInput.value;
+            const streamUrlInput = document.getElementById("streamUrlInput")
+            const streamUrl = streamUrlInput.value;
+            if (flvjs.isSupported()) {
+                this.flvPlayer = flvjs.createPlayer({
+                    type: 'flv',
+                    isLive: true,
+                    hasAudio: false,
+                    hasVideo: true,
+                    url: "ws://"+deployUrl+"/rtsp?url="+streamUrl,
+                })
+                this.flvPlayer.attachMediaElement(videoElement)
+                this.flvPlayer.load()
+                this.videoPause = true
+                this.videoButton.textContent = "play"
+            }
+        }
+
+        function pauseVideo() {
+            if (this.videoPause) {
+                this.flvPlayer.currentTime = this.flvPlayer.buffered.end(0) - 1;
+                this.flvPlayer.play()
+                this.videoButton.textContent = "pause"
+            } else {
+                this.flvPlayer.pause()
+                this.videoButton.textContent = "play"
+            }
+            this.videoPause = !this.videoPause
+        }
+    </script>
+</div>
+</body>
+</html>

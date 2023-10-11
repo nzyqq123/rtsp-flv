@@ -1,14 +1,15 @@
+// import
 const express = require("express");
 const expressWs = require("express-ws");
 const webSocketStream = require("websocket-stream/stream");
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require("fluent-ffmpeg");
-ffmpeg.setFfmpegPath(ffmpegPath);
 const log4js = require('log4js');
-const logger = log4js.getLogger();
-logger.level = log4js.levels.INFO
 const path = require("path");
-const {response} = require("express");
+
+// initialize constants
+const LOGGER = log4js.getLogger();
+LOGGER.level = log4js.levels.INFO
 let HOST = process.env.RHF_HOST;
 let PORT = process.env.RHF_PORT;
 if (HOST === undefined) {
@@ -17,37 +18,45 @@ if (HOST === undefined) {
 if (PORT === undefined) {
     PORT = 8080
 }
-const MAP = new Map();
+const CONNECT_MAP = new Map();
 
-
+// initialize component
+ffmpeg.setFfmpegPath(ffmpegPath);
 const app = express();
 expressWs(app, null, {perMessgaeDeflate: true});
 
-
+// register route
+// static
 app.use(express.static('public'));
 app.set('views', path.join(__dirname, 'views'));
 app.engine('.html', require('ejs').renderFile);
 app.set('view engine', 'html');
+// index page
 app.get("/", (req, res) => {
     res.type("html");
     res.render("index", {});
 });
-
-
+// info page
+app.get("/info", (req, res) => {
+    res.type("html");
+    res.render("info", {});
+});
+// rtsp to ws-flv
 app.ws("/rtsp", rtspHandler);
+// connect info
 app.get("/rtsp", (req, res) => {
-    res.send(Object.fromEntries(MAP))
+    res.send(Object.fromEntries(CONNECT_MAP))
 });
 
-
+// register port
 app.listen(PORT, () => {
-    logger.info(
+    LOGGER.info(
         "Server Start...\n"
         + "App running at:\n"
         + "- Local:  http://" + HOST + ":" + PORT);
 });
 
-
+// functions
 function rtspHandler(ws, req) {
     const stream = webSocketStream(ws, {
         binary: true,
@@ -57,7 +66,7 @@ function rtspHandler(ws, req) {
     });
 
     let url = req.query.url;
-    logger.info("Request for", url)
+    LOGGER.info("Request for", url)
 
     try {
         ffmpeg(url)
@@ -65,23 +74,23 @@ function rtspHandler(ws, req) {
             .addInputOption("-rtsp_transport", "tcp", "-buffer_size", "102400")
             // more event handlers search https://www.npmjs.com/package/fluent-ffmpeg#setting-event-handlers
             .on("start", () => {
-                if (MAP.get(url) >= 0) {
-                    MAP.set(url, MAP.get(url) + 1)
+                if (CONNECT_MAP.get(url) >= 0) {
+                    CONNECT_MAP.set(url, CONNECT_MAP.get(url) + 1)
                 } else {
-                    MAP.set(url, 1)
+                    CONNECT_MAP.set(url, 1)
                 }
-                logger.info("Transport Start...")
+                LOGGER.info("Transport Start...")
             })
             .on("codecData", (data) => {
-                logger.info("Input is " + data.audio + " audio " + "with " + data.video + " video");
+                LOGGER.info("Input is " + data.audio + " audio " + "with " + data.video + " video");
             })
             .on("error", err => {
-                MAP.set(url, MAP.get(url) - 1)
-                logger.info("Cannot process video with " + url + " for" + err.message);
+                CONNECT_MAP.set(url, CONNECT_MAP.get(url) - 1)
+                LOGGER.info("Cannot process video with " + url + " for" + err.message);
             })
             .on("end", () => {
-                MAP.set(url, MAP.get(url) - 1)
-                logger.info("Transcoding for " + url + " succeeded !");
+                CONNECT_MAP.set(url, CONNECT_MAP.get(url) - 1)
+                LOGGER.info("Transcoding for " + url + " succeeded !");
             })
             .videoCodec('copy').noAudio().outputFormat("flv").pipe(stream);
     } catch (error) {
