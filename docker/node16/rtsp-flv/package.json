@@ -5,7 +5,7 @@
   "license": "Apache",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nzyqq123/rtsp-flv.git",
+    "url": "https://github.com/nzyqq123/rtsp-flv.git"
   },
   "scripts": {
     "start": "node index.js"
