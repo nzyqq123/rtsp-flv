@@ -6,7 +6,6 @@
 </head>
 <body>
 <div align="center">
-    <script src="../public/flv.js"></script>
     <video controls id="videoElement"></video>
     <table width="50%" text-align="center">
         <tr>
@@ -24,6 +23,7 @@
     </table>
     <button id="urlButton" onclick="setUrl()">set</button>
     <button id="videoButton" onclick="pauseVideo()">play</button>
+    <script src="https://cdn.bootcss.com/flv.js/1.5.0/flv.js"></script>
     <script>
         flvPlayer = null
         videoPause = true
